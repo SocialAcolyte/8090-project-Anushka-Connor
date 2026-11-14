@@ -27,7 +27,7 @@ flowchart TD
 
 ## Original sketch
 
-![Hand-drawn sketch of the Forward Deployed 8090 pipeline](docs/concept-sketch.jpg)
+<img src="docs/concept-sketch.jpg" alt="Hand-drawn sketch of the Forward Deployed 8090 pipeline" width="320">
 
 ## Plan for the 20 hours
 
