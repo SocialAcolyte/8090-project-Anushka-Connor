@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PLANT-MAINT 3.1 — Work Order Terminal</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #0a0f0a; color: #33ff66; font-family: "Courier New", monospace; font-size: 15px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 18px; letter-spacing: 1px; border-bottom: 2px solid #1f7a3a; padding-bottom: 8px; }
+  .sub { color: #1f7a3a; font-size: 12px; margin-top: -6px; }
+  fieldset { border: 1px solid #1f7a3a; margin: 14px 0; }
+  legend { padding: 0 6px; color: #9effb0; }
+  label { display: block; margin: 8px 0 2px; color: #7fffa0; }
+  select, input, button { background: #06120a; color: #33ff66; border: 1px solid #1f7a3a; font-family: inherit; font-size: 14px; padding: 6px; }
+  button { cursor: pointer; margin-top: 10px; }
+  button:hover { background: #0e2415; }
+  .out { white-space: pre-wrap; background: #06120a; border: 1px solid #1f7a3a; padding: 10px; min-height: 40px; }
+  .muted { color: #1f7a3a; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>PLANT-MAINT 3.1 &nbsp; WORK ORDER TERMINAL</h1>
+  <div class="sub">SYNTHETIC SYSTEM — demo fixture, not real facility software</div>
+
+  <fieldset>
+    <legend>Single Work Order</legend>
+    <label>Account</label>
+    <select id="acct"></select>
+    <label>Part</label>
+    <select id="part"></select>
+    <label>Qty</label>
+    <input id="qty" type="number" value="1" min="1" />
+    <button onclick="order()">SUBMIT ORDER [F1]</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>Month-End Bulk Approval</legend>
+    <div class="muted">Approves one order per part for the selected account in a single run.</div>
+    <label>Account</label>
+    <select id="bacct"></select>
+    <button onclick="bulk()">APPROVE ALL PARTS [F9]</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>Output</legend>
+    <div id="out" class="out">ready.</div>
+  </fieldset>
+</div>
+<script>
+const money = (c) => "$" + (c / 100).toFixed(2);
+async function load() {
+  const s = await (await fetch("/api/state")).json();
+  for (const sel of ["acct", "bacct"]) {
+    document.getElementById(sel).innerHTML = s.accounts
+      .map((a) => `<option value="${a.id}">${a.name}${a.negotiatedRatePct ? " (" + a.negotiatedRatePct + "% rate)" : ""}</option>`).join("");
+  }
+  document.getElementById("part").innerHTML = s.parts
+    .map((p) => `<option value="${p.id}">${p.name} — ${money(p.listPriceCents)}</option>`).join("");
+}
+async function order() {
+  const body = { accountId: acct.value, partId: part.value, qty: +qty.value };
+  const r = await (await fetch("/api/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).json();
+  out.textContent = `ORDER ${r.id}\naccount ${r.accountId}\npart    ${r.partId}\nlist    ${money(r.listPriceCents)}\ncharged ${money(r.amountCents)}  (unit ${money(r.unitPriceCents)} x ${r.qty})`;
+}
+async function bulk() {
+  const s = await (await fetch("/api/state")).json();
+  const body = { accountId: bacct.value, partIds: s.parts.map((p) => p.id), approvedBy: "operator" };
+  const r = await (await fetch("/api/bulk-approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).json();
+  out.textContent = "BULK APPROVAL\n" + r.map((o) => `${o.id}  ${o.partId}  list ${money(o.listPriceCents)}  charged ${money(o.amountCents)}`).join("\n");
+}
+load();
+</script>
+</body>
+</html>

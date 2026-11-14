@@ -1,0 +1,14 @@
+{
+  "_comment": "SYNTHETIC demo data. Not real, not from any real facility. The negotiated rate is the hidden business rule the rebuild must preserve.",
+  "accounts": [
+    { "id": "ACME-GRID",     "name": "Acme Grid Co",                 "negotiatedRatePct": 0 },
+    { "id": "FERMI-STATION", "name": "Fermi Station (Enterprise)",   "negotiatedRatePct": 10 },
+    { "id": "HANSEN-PLANT",  "name": "Hansen Power Plant (Enterprise)", "negotiatedRatePct": 15 }
+  ],
+  "parts": [
+    { "id": "PMP-204", "name": "Coolant Pump Seal",          "listPriceCents": 100000 },
+    { "id": "VLV-061", "name": "Isolation Valve Actuator",   "listPriceCents": 450000 },
+    { "id": "SNS-330", "name": "Neutron Flux Sensor",        "listPriceCents": 220000 },
+    { "id": "GSK-012", "name": "Containment Gasket Set",     "listPriceCents":  36000 }
+  ]
+}
