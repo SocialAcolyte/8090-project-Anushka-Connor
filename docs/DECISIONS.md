@@ -46,8 +46,8 @@ Every command can print `--json`, so a coding agent can drive it from the shell.
 - Acceptance checks live outside the repair agent's reach, so it cannot edit the tests to pass.
 - `verify` runs live in the demo. Rebuilds and repairs are recorded runs, labelled as recorded.
 - The demo apps are synthetic. Nothing real or proprietary.
-- **Monet Shot: approved by the organizers** (Fri Nov 13). Use it.
-- **REA: not yet confirmed.** Ask in #evolve-help. Fallback: the model reads the source directly.
+- **Monet Shot: approved by the organizers** (Fri Nov 13, 9:05 PM). Use it.
+- **REA: cleared to use.**
 
 ## Recording input: Monet Shot
 
@@ -63,35 +63,3 @@ Each recording is a `<name>.reel/` folder:
 | `meta.json` | Pixel size, scale, duration, and the offset of the voice file | Converting coordinates and aligning audio with video |
 
 New code we write: reading the `.reel` folder, detecting pointing and circling, aligning it with the transcript, and turning each note into a change, bug or keep.
-
-### Question to post in #evolve-help
-
-Monet Shot is approved. Still to ask, about REA:
-
-> Hi! Thanks for clearing Monet Shot. One more rules check: we'd also like to use REA, a reverse-engineering tool that existed before the event, as an installed tool. We won't copy its code, and we'll list it with its license in our README. All the project code is written at EVOLVE. Is that OK?
-
-## Out of scope (mention as "next" only)
-
-- Building a rebuild engine. Claude Code rebuilds; Software Factory is the natural home.
-- An MCP server, Chrome extension or desktop agents.
-- Automated video diffing. Video is for human intent, not pixel comparison.
-- A drawing or annotation UI. People narrate and point; they don't draw.
-- Fusion (composing several systems) and a third implementation.
-- A web dashboard. Output is the CLI plus one HTML report per run.
-
-## The demo
-
-Target: `fixtures/legacy-plant`, a synthetic late-90s industrial maintenance-ordering app.
-
-Hidden rule: enterprise accounts get a negotiated rate (Fermi Station 10%, Hansen Plant 15%). It must hold on the common single-order flow **and** the rare month-end bulk-approval flow. The UI never shows the rate.
-
-1. **Watch:** backfill from the order history. Single orders appear hundreds of times; month-end bulk approval appears once per account.
-2. **Contract:** the negotiated-rate contract, with evidence from both flows and one ambiguity a person approves.
-3. **A/B:** the baseline rebuild drops the rate on month-end bulk approval. `verify` catches it live. The contract-driven rebuild passes.
-4. **Annotate:** the operator records 20 seconds on the rebuilt app ("this button label is confusing", "the total jumps when I change quantity"). We get one approved change and one bug; the agent fixes both, and `verify` shows the business rules didn't move.
-5. **Stretch:** lost response plus retry, checked against records for exactly one order and one charge.
-
-## Known weaknesses we accept
-
-- Our legacy app is synthetic, so it's simpler than a real one. We say so.
-- This overlaps with process mining and record-and-replay testing. What's new: business-meaning contracts a person approves, with evidence, that bind to a different implementation.

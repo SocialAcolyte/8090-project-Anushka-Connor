@@ -1,0 +1,80 @@
+{
+  "id": "negotiated-rate",
+  "version": 1,
+  "title": "Enterprise negotiated rate",
+  "statement": "Enterprise accounts pay list price less their negotiated rate on every order, including month-end bulk approvals.",
+  "status": "approved",
+  "approvedBy": "connor",
+  "approvedAt": "2026-11-13T21:30:00-08:00",
+  "workflows": [
+    { "id": "single-order", "operation": "POST /api/order", "observed": 214, "frequency": "common" },
+    { "id": "month-end-bulk", "operation": "POST /api/bulk-approve", "observed": 3, "frequency": "rare" }
+  ],
+  "rule": {
+    "kind": "price-ratio",
+    "expression": "unitPriceCents = round(listPriceCents * (1 - ratePct / 100)); amountCents = unitPriceCents * qty",
+    "parameters": {
+      "ACME-GRID": { "ratePct": 0 },
+      "FERMI-STATION": { "ratePct": 10 },
+      "HANSEN-PLANT": { "ratePct": 15 }
+    }
+  },
+  "scenarios": [
+    {
+      "id": "fermi-single-pump-seal",
+      "workflow": "single-order",
+      "operation": "POST /api/order",
+      "input": { "accountId": "FERMI-STATION", "partId": "PMP-204", "qty": 1 },
+      "expect": { "listPriceCents": 100000, "unitPriceCents": 90000, "amountCents": 90000 }
+    },
+    {
+      "id": "hansen-single-two-actuators",
+      "workflow": "single-order",
+      "operation": "POST /api/order",
+      "input": { "accountId": "HANSEN-PLANT", "partId": "VLV-061", "qty": 2 },
+      "expect": { "listPriceCents": 450000, "unitPriceCents": 382500, "amountCents": 765000 }
+    },
+    {
+      "id": "acme-single-no-discount",
+      "workflow": "single-order",
+      "operation": "POST /api/order",
+      "input": { "accountId": "ACME-GRID", "partId": "SNS-330", "qty": 1 },
+      "expect": { "listPriceCents": 220000, "unitPriceCents": 220000, "amountCents": 220000 }
+    },
+    {
+      "id": "fermi-month-end-bulk",
+      "workflow": "month-end-bulk",
+      "operation": "POST /api/bulk-approve",
+      "input": { "accountId": "FERMI-STATION", "partIds": ["PMP-204", "GSK-012"], "approvedBy": "OPERATOR" },
+      "expect": {
+        "count": 2,
+        "totalCents": 122400,
+        "records": [
+          { "partId": "PMP-204", "listPriceCents": 100000, "unitPriceCents": 90000, "amountCents": 90000 },
+          { "partId": "GSK-012", "listPriceCents": 36000, "unitPriceCents": 32400, "amountCents": 32400 }
+        ]
+      }
+    }
+  ],
+  "evidence": [
+    { "kind": "db-rows", "source": "orders", "summary": "Every FERMI-STATION order (single and bulk) has unit_price = 0.90 x list_price.", "refs": [] },
+    { "kind": "request-log", "source": "access.log", "summary": "POST /api/bulk-approve appears only at month end, once per account.", "refs": [] },
+    { "kind": "code", "source": "fixtures/legacy-plant/server.js", "summary": "priceFor() applies the account's negotiatedRatePct to list price.", "refs": [] }
+  ],
+  "provenance": {
+    "observed": [
+      "FERMI-STATION orders are charged 90% of list on both workflows.",
+      "HANSEN-PLANT orders are charged 85% of list on both workflows.",
+      "ACME-GRID orders are charged full list price."
+    ],
+    "inferred": [
+      "The discount is a per-account percentage, not a per-part price list."
+    ],
+    "approved": [
+      "The rate must also apply to month-end bulk approval (confirmed by the business owner)."
+    ],
+    "unknown": [
+      "Whether the rate changes when a contract renews."
+    ]
+  }
+}
