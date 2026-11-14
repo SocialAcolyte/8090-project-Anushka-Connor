@@ -1,0 +1,15 @@
+{
+  "name": "forward-deployed-8090",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Learn how a legacy system is really used, turn it into behavior contracts, and prove a rebuild keeps them.",
+  "license": "MIT",
+  "bin": { "fd8090": "cli/fd8090.js" },
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "demo:seed": "node fixtures/legacy-plant/seed-history.js --reset",
+    "demo:serve": "node fixtures/legacy-plant/server.js",
+    "watch": "node cli/fd8090.js watch fixtures/legacy-plant/data",
+    "contract": "node cli/fd8090.js contract out/watch.json"
+  }
+}

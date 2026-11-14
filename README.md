@@ -6,6 +6,18 @@ An agent pipeline that does a forward-deployed engineer's job on a legacy enterp
 
 **Current scope and decisions: [docs/DECISIONS.md](docs/DECISIONS.md).** Demo target: [fixtures/legacy-plant](fixtures/legacy-plant).
 
+## Run it
+
+Node 22.5 or newer, no dependencies.
+
+```
+npm run demo:seed        # give the synthetic legacy app 30 days of history
+node cli/fd8090.js watch fixtures/legacy-plant/data
+node cli/fd8090.js contract out/watch.json
+```
+
+`watch` reads the legacy app's database and request log without touching its code, and finds that month-end bulk approval is rare (3 requests in 30 days, against 172 single orders). `contract` finds the per-account negotiated rate from the data alone and writes a proposed contract with 6 scenarios replayed from real requests, in `out/contracts/`. The contract format is [contracts/schema.json](contracts/schema.json). Add `--json` to any command for machine-readable output.
+
 ## How it works
 
 ```mermaid

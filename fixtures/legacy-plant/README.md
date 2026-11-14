@@ -1,34 +1,41 @@
-# Legacy Plant — demo fixture
+# Legacy Plant: demo fixture
 
-A **synthetic** plant maintenance-ordering system, styled as 1990s industrial software. It is not real and is not taken from any real facility. It exists so the Forward Deployed 8090 pipeline has a legacy target whose hidden business rules we control, so the regression in the demo is real and reproducible.
+A **synthetic** plant maintenance-ordering system, styled as late-90s industrial software. It is not real and is not taken from any real facility. It exists so Forward Deployed 8090 has a legacy target whose business rules we know, so we can measure whether a rebuild keeps them.
 
-Zero dependencies. `node server.js`, then open http://localhost:7090.
+Zero dependencies (Node 22.5+ for the built-in SQLite):
 
-## The business rules a rebuild must preserve
+```
+node seed-history.js --reset   # 30 days of past orders and request-log lines
+node server.js                 # http://localhost:7090
+```
 
-1. **Negotiated rate.** An enterprise account pays `listPrice * (1 - negotiatedRatePct/100)`. In the seed data Fermi Station gets 10% off and Hansen Plant 15%. This rule must hold on **both** the single-order flow and the month-end bulk-approval flow.
-2. **Retry safety.** A `POST /api/order` carrying a repeated `Idempotency-Key` returns the original order instead of creating a second order and a second charge. This is an approved policy, not something inferred from a recording.
+## What a rebuild must preserve
 
-## Why there are two flows
+1. **Negotiated rate.** An enterprise account pays `listPrice * (1 - rate/100)`: Fermi Station 10%, Hansen Plant 15%, Acme Grid none. It must hold on **both** the single-order flow and the month-end bulk-approval flow. The UI never shows the rate.
+2. **Retry safety.** A `POST /api/order` with a repeated `Idempotency-Key` returns the original order instead of creating a second order and charge.
 
-- **Single work order** is the common flow — hundreds of times across a watch period.
-- **Month-end bulk approval** is the rare flow — a couple of times a month.
+## What the system records (what `watch` reads)
 
-A short screen recording captures the common flow and misses the rare one. The in-app **watcher** (`probe()` in `server.js`, logging to `watch-log.jsonl`) captures both, over as long as you run it. The rebuilt app in the demo preserves the negotiated rate on single orders but silently drops it on the bulk path — the flow only the long-term watcher saw.
+There is no special instrumentation. Like a real legacy system, it keeps:
+
+- **`data/plant.db`** (SQLite): `accounts`, `parts`, `orders` and `idempotency_keys`. Each order stores list price, unit price charged and amount. Month-end orders share a `batch_id`.
+- **`data/access.log`**: one JSON line per write request (time, method, path, status, body).
+
+`seed-history.js` fills both with 30 days of activity (Oct 14 to Nov 12): single orders every working day (172 of them) and one month-end close on Fri Oct 30 (3 bulk approvals, one per account). The month-end flow is rare, but it's already in the data on day one, which is what `watch` backfills from.
 
 ## Files
 
 | File | What it is |
 | --- | --- |
-| `server.js` | The legacy app. Business logic, the two flows, and the `probe()` watcher. |
-| `public/index.html` | Green-screen work-order terminal UI. |
-| `seed.json` | Synthetic accounts (with negotiated rates) and parts. |
-| `simulate.js` | Generates weeks of synthetic usage so the watch log has the common flow often and the rare flow rarely. |
+| `plant.js` | Database schema and business logic, including the negotiated rate and retry safety |
+| `server.js` | HTTP server and request log |
+| `public/index.html` | Late-90s work-order entry UI |
+| `seed.json` | Synthetic accounts and parts |
+| `seed-history.js` | Writes 30 days of backdated history, the same on every run |
 
 ## Endpoints
 
-- `GET /api/state` — accounts and parts
-- `POST /api/order` — single order; honours `Idempotency-Key`
-- `POST /api/bulk-approve` — month-end bulk approval
-- `GET /api/orders` — orders placed
-- `GET /api/events` — the watcher's event log
+- `GET /api/state`: accounts and parts
+- `POST /api/order`: single order; honours `Idempotency-Key`
+- `POST /api/bulk-approve`: month-end bulk approval
+- `GET /api/orders`: all orders

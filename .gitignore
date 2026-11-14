@@ -148,4 +148,6 @@ vite.config.ts.timestamp-*
 # Turbo Repo
 .turbo
 
-fixtures/legacy-plant/watch-log.jsonl
+# demo data and CLI output
+fixtures/legacy-plant/data/
+out/
