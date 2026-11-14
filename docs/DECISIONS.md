@@ -46,11 +46,12 @@ Every command can print `--json`, so a coding agent can drive it from the shell.
 - Acceptance checks live outside the repair agent's reach, so it cannot edit the tests to pass.
 - `verify` runs live in the demo. Rebuilds and repairs are recorded runs, labelled as recorded.
 - The demo apps are synthetic. Nothing real or proprietary.
-- Ask in #evolve-help whether REA and Monet Shot, both built before the event, are allowed. Fallback for REA: the model reads the source directly. Fallback for Monet Shot: any screen recording plus a cursor log.
+- **Monet Shot: approved by the organizers** (Fri Nov 13). Use it.
+- **REA: not yet confirmed.** Ask in #evolve-help. Fallback: the model reads the source directly.
 
 ## Recording input: Monet Shot
 
-[Monet Shot](https://github.com/SocialAcolyte/monet-shot) is Connor's open-source macOS screen recorder (MIT, public since Oct 31, 2026, installable with Homebrew). We use it as an installed tool, the same as any open-source dependency, list it in the README with its license, and say plainly that it's Connor's. We do not copy or rebuild its code here.
+[Monet Shot](https://github.com/SocialAcolyte/monet-shot) is Connor's open-source macOS screen recorder (MIT, public since Oct 31, 2026, installable with Homebrew). The organizers approved using it on Fri Nov 13. We use it as an installed tool, the same as any open-source dependency, list it in the README with its license, and say plainly that it's Connor's. We do not copy or rebuild its code here.
 
 Each recording is a `<name>.reel/` folder:
 
@@ -65,7 +66,9 @@ New code we write: reading the `.reel` folder, detecting pointing and circling, 
 
 ### Question to post in #evolve-help
 
-> Hi! Quick rules check for our team. We'd like to use two tools that existed before the event: Monet Shot (a public MIT screen recorder on GitHub since Oct 31, built by one of us) and REA (a reverse-engineering tool). We'd use them as installed tools, not copy their code, and list both with licenses in our README. All the project code is written at EVOLVE. Is that OK?
+Monet Shot is approved. Still to ask, about REA:
+
+> Hi! Thanks for clearing Monet Shot. One more rules check: we'd also like to use REA, a reverse-engineering tool that existed before the event, as an installed tool. We won't copy its code, and we'll list it with its license in our README. All the project code is written at EVOLVE. Is that OK?
 
 ## Out of scope (mention as "next" only)
 
