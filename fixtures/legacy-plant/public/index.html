@@ -3,75 +3,239 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PLANT-MAINT 3.1 — Work Order Terminal</title>
+<title>PLANT-MAINT 3.1 - Work Order Entry</title>
 <style>
-  :root { color-scheme: dark; }
-  body { margin: 0; background: #0a0f0a; color: #33ff66; font-family: "Courier New", monospace; font-size: 15px; }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 16px; }
-  h1 { font-size: 18px; letter-spacing: 1px; border-bottom: 2px solid #1f7a3a; padding-bottom: 8px; }
-  .sub { color: #1f7a3a; font-size: 12px; margin-top: -6px; }
-  fieldset { border: 1px solid #1f7a3a; margin: 14px 0; }
-  legend { padding: 0 6px; color: #9effb0; }
-  label { display: block; margin: 8px 0 2px; color: #7fffa0; }
-  select, input, button { background: #06120a; color: #33ff66; border: 1px solid #1f7a3a; font-family: inherit; font-size: 14px; padding: 6px; }
-  button { cursor: pointer; margin-top: 10px; }
-  button:hover { background: #0e2415; }
-  .out { white-space: pre-wrap; background: #06120a; border: 1px solid #1f7a3a; padding: 10px; min-height: 40px; }
-  .muted { color: #1f7a3a; font-size: 12px; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: #3a6ea5;
+    font: 12px Tahoma, "Segoe UI", Verdana, Geneva, sans-serif;
+    color: #000;
+    padding: 12px;
+  }
+  .window {
+    background: #d4d0c8;
+    border: 2px solid; border-color: #fff #404040 #404040 #fff;
+    box-shadow: 1px 1px 0 #000;
+    min-width: 760px; max-width: 1200px; margin: 0 auto;
+    display: flex; flex-direction: column; min-height: calc(100vh - 24px);
+  }
+  .titlebar {
+    background: linear-gradient(90deg, #0a246a, #a6caf0);
+    color: #fff; font-weight: bold; padding: 3px 4px 3px 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .titlebar .btns { display: flex; gap: 2px; }
+  .titlebar .btns span {
+    width: 16px; height: 14px; background: #d4d0c8; color: #000;
+    border: 1px solid; border-color: #fff #404040 #404040 #fff;
+    font: bold 9px/12px Tahoma, sans-serif; text-align: center;
+  }
+  .menubar { display: flex; gap: 2px; padding: 2px 4px; border-bottom: 1px solid #808080; }
+  .menubar span { padding: 2px 6px; }
+  .menubar span:first-letter { text-decoration: underline; }
+  .toolbar {
+    display: flex; gap: 4px; align-items: center; padding: 4px 6px;
+    border-top: 1px solid #fff; border-bottom: 1px solid #808080;
+  }
+  .toolbar .sep { width: 2px; height: 20px; border-left: 1px solid #808080; border-right: 1px solid #fff; margin: 0 4px; }
+  .toolbar .ctx { margin-left: auto; color: #333; }
+  button {
+    font: inherit; background: #d4d0c8; padding: 3px 12px; min-width: 72px;
+    border: 2px solid; border-color: #fff #404040 #404040 #fff; cursor: pointer;
+  }
+  button:active { border-color: #404040 #fff #fff #404040; }
+  button.default { outline: 1px solid #000; outline-offset: -4px; }
+  .body { padding: 8px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .row { display: grid; grid-template-columns: 3fr 2fr; gap: 8px; }
+  fieldset {
+    margin: 0; padding: 10px 10px 8px; border: 2px groove #fff;
+  }
+  legend { padding: 0 4px; }
+  .form { display: grid; grid-template-columns: 110px 1fr 100px 1fr; gap: 6px 8px; align-items: center; }
+  .form label { text-align: right; }
+  .form .wide { grid-column: span 3; }
+  select, input {
+    font: inherit; background: #fff; height: 21px; padding: 1px 3px; width: 100%;
+    border: 2px solid; border-color: #808080 #fff #fff #808080;
+  }
+  input[readonly] { background: #d4d0c8; }
+  .actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; }
+  .note { color: #333; margin: 0 0 8px; line-height: 1.4; }
+  .grid-wrap {
+    flex: 1; min-height: 220px; overflow: auto; background: #fff;
+    border: 2px solid; border-color: #808080 #fff #fff #808080;
+  }
+  table { border-collapse: collapse; width: 100%; }
+  th {
+    position: sticky; top: 0; background: #d4d0c8; text-align: left; font-weight: normal;
+    padding: 2px 6px; border: 1px solid; border-color: #fff #808080 #808080 #fff; white-space: nowrap;
+  }
+  td { padding: 2px 6px; border-bottom: 1px solid #ececec; white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:nth-child(even) td { background: #f4f4f0; }
+  tr.new td { background: #0a246a; color: #fff; }
+  .statusbar { display: flex; gap: 2px; padding: 2px; border-top: 1px solid #fff; }
+  .statusbar div {
+    padding: 1px 6px; border: 1px solid; border-color: #808080 #fff #fff #808080; white-space: nowrap;
+  }
+  .statusbar .msg { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .synthetic { color: #8b0000; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>PLANT-MAINT 3.1 &nbsp; WORK ORDER TERMINAL</h1>
-  <div class="sub">SYNTHETIC SYSTEM — demo fixture, not real facility software</div>
+<div class="window">
+  <div class="titlebar">
+    <span>PLANT-MAINT 3.1 - Work Order Entry [PMNT-PROD]</span>
+    <div class="btns"><span>_</span><span>&#9633;</span><span>x</span></div>
+  </div>
+  <div class="menubar">
+    <span>File</span><span>Edit</span><span>Orders</span><span>Month-End</span><span>Reports</span><span>Window</span><span>Help</span>
+  </div>
+  <div class="toolbar">
+    <button onclick="resetForm()">New</button>
+    <button onclick="refresh()">Refresh</button>
+    <div class="sep"></div>
+    <button onclick="document.getElementById('bacct').focus()">Month-End</button>
+    <span class="ctx">Site: ALL &nbsp;|&nbsp; Fiscal period: NOV-2026</span>
+  </div>
 
-  <fieldset>
-    <legend>Single Work Order</legend>
-    <label>Account</label>
-    <select id="acct"></select>
-    <label>Part</label>
-    <select id="part"></select>
-    <label>Qty</label>
-    <input id="qty" type="number" value="1" min="1" />
-    <button onclick="order()">SUBMIT ORDER [F1]</button>
-  </fieldset>
+  <div class="body">
+    <div class="row">
+      <fieldset>
+        <legend>Work Order Entry</legend>
+        <div class="form">
+          <label for="acct">Customer account:</label>
+          <select id="acct" class="wide" onchange="showAccount()"></select>
 
-  <fieldset>
-    <legend>Month-End Bulk Approval</legend>
-    <div class="muted">Approves one order per part for the selected account in a single run.</div>
-    <label>Account</label>
-    <select id="bacct"></select>
-    <button onclick="bulk()">APPROVE ALL PARTS [F9]</button>
-  </fieldset>
+          <label for="part">Part number:</label>
+          <select id="part" class="wide" onchange="showPart()"></select>
 
-  <fieldset>
-    <legend>Output</legend>
-    <div id="out" class="out">ready.</div>
-  </fieldset>
+          <label for="qty">Quantity:</label>
+          <input id="qty" type="number" value="1" min="1" />
+          <label for="list">List price (ea):</label>
+          <input id="list" readonly />
+
+          <label for="contract">Contract terms:</label>
+          <input id="contract" readonly />
+          <label for="uom">Unit of measure:</label>
+          <input id="uom" value="EA" readonly />
+        </div>
+        <div class="actions">
+          <button onclick="resetForm()">Clear</button>
+          <button class="default" onclick="order()">Submit (F1)</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Month-End Processing</legend>
+        <p class="note">Raises and approves one work order for every stocked part for the selected account. Run once per fiscal period.</p>
+        <div class="form" style="grid-template-columns: 110px 1fr;">
+          <label for="bacct">Customer account:</label>
+          <select id="bacct"></select>
+          <label for="approver">Approved by:</label>
+          <input id="approver" value="OPERATOR" />
+        </div>
+        <div class="actions">
+          <button class="default" onclick="bulk()">Approve All (F9)</button>
+        </div>
+      </fieldset>
+    </div>
+
+    <fieldset style="flex:1; display:flex; flex-direction:column;">
+      <legend>Work Orders</legend>
+      <div class="grid-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>WO #</th><th>Created</th><th>Account</th><th>Part</th>
+              <th class="num">Qty</th><th class="num">List (ea)</th><th class="num">Unit charged</th>
+              <th class="num">Amount</th><th>Approved by</th>
+            </tr>
+          </thead>
+          <tbody id="grid"></tbody>
+        </table>
+      </div>
+    </fieldset>
+  </div>
+
+  <div class="statusbar">
+    <div class="msg" id="msg">Ready</div>
+    <div id="count">0 records</div>
+    <div>User: OPERATOR</div>
+    <div class="synthetic">SYNTHETIC DEMO SYSTEM</div>
+  </div>
 </div>
+
 <script>
-const money = (c) => "$" + (c / 100).toFixed(2);
-async function load() {
-  const s = await (await fetch("/api/state")).json();
-  for (const sel of ["acct", "bacct"]) {
-    document.getElementById(sel).innerHTML = s.accounts
-      .map((a) => `<option value="${a.id}">${a.name}${a.negotiatedRatePct ? " (" + a.negotiatedRatePct + "% rate)" : ""}</option>`).join("");
-  }
-  document.getElementById("part").innerHTML = s.parts
-    .map((p) => `<option value="${p.id}">${p.name} — ${money(p.listPriceCents)}</option>`).join("");
+let state = { accounts: [], parts: [] };
+const $ = (id) => document.getElementById(id);
+const money = (c) => (c / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+const accountName = (id) => (state.accounts.find((a) => a.id === id) || {}).name || id;
+
+function setMsg(t) { $("msg").textContent = t; }
+
+function showAccount() {
+  const a = state.accounts.find((x) => x.id === $("acct").value);
+  $("contract").value = a && a.negotiatedRatePct ? "Enterprise agreement on file" : "Standard terms";
 }
+function showPart() {
+  const p = state.parts.find((x) => x.id === $("part").value);
+  $("list").value = p ? money(p.listPriceCents) : "";
+}
+function resetForm() { $("qty").value = 1; $("acct").selectedIndex = 0; $("part").selectedIndex = 0; showAccount(); showPart(); setMsg("Ready"); }
+
+async function refresh(highlight = []) {
+  const orders = await (await fetch("/api/orders")).json();
+  const rows = orders.slice().reverse().slice(0, 200);
+  $("grid").innerHTML = rows.map((o) => `
+    <tr class="${highlight.includes(o.id) ? "new" : ""}">
+      <td>${esc(o.id)}</td>
+      <td>${esc(new Date(o.createdAt).toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" }))}</td>
+      <td>${esc(accountName(o.accountId))}</td>
+      <td>${esc(o.partId)}</td>
+      <td class="num">${o.qty}</td>
+      <td class="num">${money(o.listPriceCents)}</td>
+      <td class="num">${money(o.unitPriceCents)}</td>
+      <td class="num">${money(o.amountCents)}</td>
+      <td>${esc(o.approvedBy || "")}</td>
+    </tr>`).join("");
+  $("count").textContent = `${orders.length} records`;
+}
+
 async function order() {
-  const body = { accountId: acct.value, partId: part.value, qty: +qty.value };
-  const r = await (await fetch("/api/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).json();
-  out.textContent = `ORDER ${r.id}\naccount ${r.accountId}\npart    ${r.partId}\nlist    ${money(r.listPriceCents)}\ncharged ${money(r.amountCents)}  (unit ${money(r.unitPriceCents)} x ${r.qty})`;
+  const body = { accountId: $("acct").value, partId: $("part").value, qty: +$("qty").value || 1 };
+  const r = await fetch("/api/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const o = await r.json();
+  if (!r.ok) return setMsg("Error: " + (o.error || r.status));
+  await refresh([o.id]);
+  setMsg(`Work order ${o.id} created - amount ${money(o.amountCents)}`);
 }
+
 async function bulk() {
-  const s = await (await fetch("/api/state")).json();
-  const body = { accountId: bacct.value, partIds: s.parts.map((p) => p.id), approvedBy: "operator" };
-  const r = await (await fetch("/api/bulk-approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).json();
-  out.textContent = "BULK APPROVAL\n" + r.map((o) => `${o.id}  ${o.partId}  list ${money(o.listPriceCents)}  charged ${money(o.amountCents)}`).join("\n");
+  const body = { accountId: $("bacct").value, partIds: state.parts.map((p) => p.id), approvedBy: $("approver").value || "OPERATOR" };
+  const r = await fetch("/api/bulk-approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const orders = await r.json();
+  if (!r.ok) return setMsg("Error: " + (orders.error || r.status));
+  await refresh(orders.map((o) => o.id));
+  const total = orders.reduce((s, o) => s + o.amountCents, 0);
+  setMsg(`Month-end approval complete - ${orders.length} work orders, total ${money(total)}`);
 }
-load();
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "F1") { e.preventDefault(); order(); }
+  if (e.key === "F9") { e.preventDefault(); bulk(); }
+});
+
+(async () => {
+  state = await (await fetch("/api/state")).json();
+  const opts = state.accounts.map((a) => `<option value="${esc(a.id)}">${esc(a.id)} - ${esc(a.name)}</option>`).join("");
+  $("acct").innerHTML = opts; $("bacct").innerHTML = opts;
+  $("part").innerHTML = state.parts.map((p) => `<option value="${esc(p.id)}">${esc(p.id)} - ${esc(p.name)}</option>`).join("");
+  showAccount(); showPart();
+  await refresh();
+})();
 </script>
 </body>
 </html>
