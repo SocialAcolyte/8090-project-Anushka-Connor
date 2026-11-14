@@ -4,6 +4,8 @@ EVOLVE: 8090 AI Hackathon project by Anushka and Connor (Nov 13–14, 2026).
 
 An agent pipeline that does a forward-deployed engineer's job on a legacy enterprise app. It takes the client's existing software and recordings of people using it, works out how the system really behaves, rebuilds it, and uses video to check that the new version does what the old one did.
 
+**Current scope and decisions: [docs/DECISIONS.md](docs/DECISIONS.md).** Demo target: [fixtures/legacy-plant](fixtures/legacy-plant).
+
 ## How it works
 
 ```mermaid
