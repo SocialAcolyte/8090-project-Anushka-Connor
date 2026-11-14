@@ -128,7 +128,7 @@ The rules ask for every AI tool, library and API used to be listed here with its
 
 | Tool | Used for | License |
 | --- | --- | --- |
-| | | |
+| [Monet Shot](https://github.com/SocialAcolyte/monet-shot) | Recording narrated screen sessions for `annotate` (video, voice, and a log of every pointer move and click). Connor's own open-source recorder, published Oct 2026, before the event. Used as an installed tool; none of its code is in this repo. | MIT |
 
 ## Team resources
 

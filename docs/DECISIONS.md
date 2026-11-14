@@ -30,7 +30,7 @@ We report how many business rules each version keeps, for example "Baseline kept
 | --- | --- | --- |
 | `watch` | A running legacy system | An agent chooses which tables, logs and endpoints to watch, at the boundaries, with no changes to the legacy code. It backfills from existing history on day one (last month's month-end runs are already in the database), then keeps watching. |
 | `contract` | Watch data | Workflows grouped from the log, with counts. One behavior contract per workflow, marking what was observed, inferred, approved and unknown. |
-| `annotate` | A narrated screen recording | Transcript (ElevenLabs speech-to-text), timestamps and frames where the cursor pointed. Each note becomes a **change** (approved contract change), a **bug** (sent to the repair agent) or a **keep** (behavior confirmed). |
+| `annotate` | A Monet Shot recording folder (`.reel`) | Transcript of the narration (ElevenLabs speech-to-text), lined up with exact pointer positions and clicks from the recording's `cursor.json`, plus frames cropped where the person pointed. Each note becomes a **change** (approved contract change), a **bug** (sent to the repair agent) or a **keep** (behavior confirmed). |
 | `verify` | Contracts + old app + new app | The behavioral linker replays the same scenarios on both apps and compares business outcomes and state. Pass, fail or blocked per contract. Failures go to the repair agent. |
 
 Every command can print `--json`, so a coding agent can drive it from the shell. An MCP wrapper is "next", not tonight.
@@ -46,7 +46,26 @@ Every command can print `--json`, so a coding agent can drive it from the shell.
 - Acceptance checks live outside the repair agent's reach, so it cannot edit the tests to pass.
 - `verify` runs live in the demo. Rebuilds and repairs are recorded runs, labelled as recorded.
 - The demo apps are synthetic. Nothing real or proprietary.
-- Ask in #evolve-help whether REA, built before the event, is allowed. Fallback: the model reads the source directly.
+- Ask in #evolve-help whether REA and Monet Shot, both built before the event, are allowed. Fallback for REA: the model reads the source directly. Fallback for Monet Shot: any screen recording plus a cursor log.
+
+## Recording input: Monet Shot
+
+[Monet Shot](https://github.com/SocialAcolyte/monet-shot) is Connor's open-source macOS screen recorder (MIT, public since Oct 31, 2026, installable with Homebrew). We use it as an installed tool, the same as any open-source dependency, list it in the README with its license, and say plainly that it's Connor's. We do not copy or rebuild its code here.
+
+Each recording is a `<name>.reel/` folder:
+
+| File | Contents | How `annotate` uses it |
+| --- | --- | --- |
+| `screen.mov` | The screen, recorded without the system cursor | Clean frames to crop at the pointer position |
+| `cursor.json` | `{ samples: [{t, x, y}], clicks: [{t, x, y}] }`, positions scaled 0–1 to the frame | Exactly where the person pointed or clicked at each moment. A circling gesture is a loop in `samples`, found with simple geometry, not a vision model |
+| `voice.m4a` | The narration | Sent to ElevenLabs speech-to-text, then lined up with `cursor.json` by timestamp |
+| `meta.json` | Pixel size, scale, duration, and the offset of the voice file | Converting coordinates and aligning audio with video |
+
+New code we write: reading the `.reel` folder, detecting pointing and circling, aligning it with the transcript, and turning each note into a change, bug or keep.
+
+### Question to post in #evolve-help
+
+> Hi! Quick rules check for our team. We'd like to use two tools that existed before the event: Monet Shot (a public MIT screen recorder on GitHub since Oct 31, built by one of us) and REA (a reverse-engineering tool). We'd use them as installed tools, not copy their code, and list both with licenses in our README. All the project code is written at EVOLVE. Is that OK?
 
 ## Out of scope (mention as "next" only)
 
